@@ -30,7 +30,8 @@ abilityList = ["ANEMONE",
 "BEECH",
 "BIDENS",
 "BLUE MOON",
-"BONE SAIL", "RUGGED SAIL",
+"BONE SAIL",
+"RUGGED SAIL",
 "BUMPY",
 "BUZZ BUZZ",
 "CACTUS",
@@ -219,9 +220,7 @@ def getAxieDataFromDb():
                         'price': int(x['transferHistory']['results'][0]['withPriceUsd'].split('.')[0]),
                         }
     priceList = []
-    prev50 = []
-    prev150 = []
-    prev300 = []
+
     for key in list(axieDataOrganised.keys()):
         priceList.append(axieDataOrganised[key]['price'])
     
@@ -305,9 +304,8 @@ def writeFile(data, fname):
     pickle.dump(data, f)
     f.close()
 
-X, Y = getEncodedData()
+#X, Y = getEncodedData()
 
-print(X[0])
 
-writeFile(X, "X_Data.pkl")
-writeFile(Y, "Y_Data.pkl")
+#writeFile(X, "X_Data.pkl")
+#writeFile(Y, "Y_Data.pkl")

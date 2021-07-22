@@ -9,11 +9,6 @@ import math
 import time
 from AbilityList import*
 
-client = MongoClient('localhost', 27017)
-
-db = client['mydb']
-
-
 
 def getListedAxies():
     print('here')
@@ -63,8 +58,39 @@ def getListedAxies():
 
     return axieDataOrganised
 
-def getEncodedData():
+def getRecentPriceStats():
+    N=300
+    client = MongoClient('localhost', 27017)
+    db = client['mydb'] 
+
+    recentEntries = db.axies_19_07.find().skip(db.axies_19_07.count() - N)
+    p= []
+    for x in recentEntries:
+        p.append(int(x['transferHistory']['results'][0]['withPriceUsd'].split('.')[0]))
+
+    avg50 = 0
+    avg150 = 0
+    avg300 = 0
+    c=0
+    for i in reversed(p):
+        if c < 50:
+            avg50 +=i
+            avg150 +=i
+            avg300 +=i
+            
+        elif c <150:
+            avg150 +=i
+            avg300 +=i
+        elif c < 300:
+            avg300 +=i
+        c+=1
+    
+    return int(avg50/50),int(avg150/150),int(avg300/300)
+
+def getEncodedListedAxies():
     data = getListedAxies()
+    avg50, avg150, avg300 = getRecentPriceStats()
+
     
     l = list(data.items())
     random.shuffle(l)
@@ -74,10 +100,7 @@ def getEncodedData():
 
     for key in data.keys():
         values = list(data[key].values())
-
-
-        Y.append(values[11])
-
+        values = values + [avg50, avg150, avg300]
         classOHE = []
         abilityOHE = []
         for i in range(len(classList)):
@@ -106,6 +129,7 @@ def getEncodedData():
         values = values + classOHE + abilityOHE
         X.append(values)
     
-    return X, Y
+    return X
 
-print(getEncodedData())
+pleasePredict = torch.floatTensor(getEncodedListedAxies())
+

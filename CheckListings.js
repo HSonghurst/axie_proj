@@ -179,7 +179,7 @@ async function main() {
     
     t2 = new Date()
 
-    if ((t2 -t1)/1000 > 20 ) {
+    if ((t2 -t1)/1000 > 30 ) {
       removeEntries()
       t1 = new Date()
     }
