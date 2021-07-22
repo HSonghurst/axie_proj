@@ -6,6 +6,7 @@ import numpy as np
 import math
 import time
 from AbilityList import*
+from modelClass import Net
 
 
 def getListedAxies():
