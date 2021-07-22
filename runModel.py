@@ -1,9 +1,7 @@
 
 
 from pymongo import MongoClient
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator
+import torch
 import numpy as np
 import math
 import time
@@ -11,7 +9,6 @@ from AbilityList import*
 
 
 def getListedAxies():
-    print('here')
      #class
     #birthDate
     #part0 name
@@ -133,5 +130,15 @@ def getEncodedListedAxies():
     
     return X
 
-pleasePredict = torch.floatTensor(getEncodedListedAxies())
+
+pleasePredict = torch.FloatTensor(getEncodedListedAxies())
+
+model = torch.load("model.pt")
+model.eval()
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+model.to(device)
+pleasePredict = pleasePredict.to(device)
+y_pred = model(pleasePredict)
+print(y_pred)
+
 
