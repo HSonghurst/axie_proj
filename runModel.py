@@ -29,6 +29,7 @@ def getListedAxies():
 
     client = MongoClient('localhost', 27017)
     db = client['mydb'] 
+    prices = []
     
     results = list(db.axies_latest.find({"birthDate": {"$exists": True}}))
     if (len(results) <1 ):
@@ -55,8 +56,9 @@ def getListedAxies():
                         'spellThree': findAbilityIndex(x['parts'][4]['name']), 
                         'spellFour': findAbilityIndex(x['parts'][5]['name']), 
                         }
+        prices.append(int(x['auction']['currentPriceUSD'].split('.')[0]))   
 
-    return axieDataOrganised
+    return axieDataOrganised, prices
 
 def getRecentPriceStats():
     N=300
@@ -88,14 +90,14 @@ def getRecentPriceStats():
     return int(avg50/50),int(avg150/150),int(avg300/300)
 
 def getEncodedListedAxies():
-    data = getListedAxies()
+    data, Y = getListedAxies()
     avg50, avg150, avg300 = getRecentPriceStats()
-
+    print(Y)
     
     l = list(data.items())
     random.shuffle(l)
     data = dict(l)
-
+    ids = list(data.keys())
     X = []
 
     for key in data.keys():
