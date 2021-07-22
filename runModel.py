@@ -30,7 +30,7 @@ def getListedAxies():
     prices = []
     
     results = list(db.axies_latest.find({"birthDate": {"$exists": True}}))
-    if (len(results) <1 ):
+    if (len(results) <5 ):
         print("Nothing in collection")
         getListedAxies()
 
@@ -90,7 +90,7 @@ def getRecentPriceStats():
 def getEncodedListedAxies():
     data, Y = getListedAxies()
     avg50, avg150, avg300 = getRecentPriceStats()
-    print(Y)
+
     
     ids = list(data.keys())
     X = []
@@ -126,17 +126,29 @@ def getEncodedListedAxies():
         values = values + classOHE + abilityOHE
         X.append(values)
     
-    return X
+    return X, Y, ids
+
+def runModel():
+    model = torch.load("model.pt")
+    model.eval()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
+    while(True):
+        
+        pleasePredict, Y, ids = getEncodedListedAxies()
+        pleasePredict = torch.FloatTensor(pleasePredict)
+        pleasePredict = pleasePredict.to(device)
+        y_pred = model(pleasePredict)
+        y_pred= [int(i.item()) for i in y_pred]
+        discountList = [Y[i]/y_pred[i] for i in range(len(y_pred))]
 
 
-pleasePredict = torch.FloatTensor(getEncodedListedAxies())
-
-model = torch.load("model.pt")
-model.eval()
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-model.to(device)
-pleasePredict = pleasePredict.to(device)
-y_pred = model(pleasePredict)
-print(y_pred)
+        for i in range(len(discountList)):
+            if discountList[i] < 0.7:
+                print(ids[i], discountList[i])
 
 
+        time.sleep(1)
+        
+runModel()      
