@@ -59,6 +59,7 @@ async function checkAxieListings(){
         image
         class
         name
+        birthDate
         genes
         owner
         class
@@ -164,9 +165,24 @@ async function uploadAxieData(axieArray){
     return done = true
 }
 
+async function removeEntries() {
+  const db = await MongoClient.connect(url);
+  const dbo = db.db("mydb");
+  dbo.collection('axies_latest').remove({})
+
+}
+
 
 async function main() {
+  t1 = new Date()
   while (true) {
+    
+    t2 = new Date()
+
+    if ((t2 -t1)/1000 > 20 ) {
+      removeEntries()
+      t1 = new Date()
+    }
     res = await checkAxieListings()
 
     done = await uploadAxieData(res)
