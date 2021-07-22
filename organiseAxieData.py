@@ -188,7 +188,7 @@ def makeRegModelNoSpell(data, test):
     print(len(X))
 
     reg = LinearRegression().fit(X, Y)
-    #print(reg.score(X, Y))
+    print(reg.score(X, Y))
 
     #print(reg.coef_)
     #print(reg.intercept_)
@@ -261,6 +261,6 @@ def loop(model1, model2):
 
         time.sleep(3)
 
-loop(model1, model2)
+#loop(model1, model2)
 
 

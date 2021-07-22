@@ -16,6 +16,7 @@
 import time
 import pickle
 from pymongo import MongoClient
+import random
 
 
 abilityList = ["ANEMONE",
@@ -159,7 +160,12 @@ abilityList = ["ANEMONE",
 "GEISHA",
 "MAKI",
 "DANGO",
-"FROZEN BUCKET"]
+"FROZEN BUCKET",
+"RUDOLPH",
+"YORISHIRO",
+"ORIGAMI",
+"KAWAII",
+"KOINOBORI"]
 
 classList =[ "PLANT", "BEAST", "AQUATIC", "BIRD", "BUG", "MECH", "REPTILE", "DAWN", "DUSK"]
 
@@ -231,14 +237,14 @@ def getAxieDataFromDb():
             axieDataOrganised[list(axieDataOrganised.keys())[i]]['prev150'] = int(sum(priceList[i-150:i])/len(priceList[i-150:i]))
         else:
             if i ==0:
-                axieDataOrganised[list(axieDataOrganised.keys())[i]]['prev50'] = priceList[i]
+                axieDataOrganised[list(axieDataOrganised.keys())[i]]['prev150'] = priceList[i]
             else:
                 axieDataOrganised[list(axieDataOrganised.keys())[i]]['prev150'] = int(sum(priceList[0:i])/len(priceList[0:i]))
         if i > 299:
             axieDataOrganised[list(axieDataOrganised.keys())[i]]['prev300'] = int(sum(priceList[i-300:i])/len(priceList[i-300:i]))
         else:
             if i ==0:
-                axieDataOrganised[list(axieDataOrganised.keys())[i]]['prev50'] = priceList[i]
+                axieDataOrganised[list(axieDataOrganised.keys())[i]]['prev300'] = priceList[i]
             else:
                 axieDataOrganised[list(axieDataOrganised.keys())[i]]['prev300'] = int(sum(priceList[0:i])/len(priceList[0:i]))
 
@@ -247,13 +253,49 @@ def getAxieDataFromDb():
 
 def getEncodedData():
     data = getAxieDataFromDb()
+
+    
+    l = list(data.items())
+    random.shuffle(l)
+    data = dict(l)
+
+    print(data[list(data.keys())[0]])
     X = []
     Y = []
 
     for key in data.keys():
         values = list(data[key].values())
+        if values[11] ==0:
+            print("price = 0")
+            continue
         Y.append(values[11])
         del values[11]
+        classOHE = []
+        abilityOHE = []
+        for i in range(len(classList)):
+            if values[0] == i:
+                classOHE.append(1)
+            else:
+                classOHE.append(0)
+
+        for i in range(len(abilityList)):
+            if values[7] == i:
+                abilityOHE.append(1)
+            elif values[8] == i:
+                abilityOHE.append(1)
+            elif values[9] == i:
+                abilityOHE.append(1)
+            elif values[10] == i:
+                abilityOHE.append(1)
+            else:
+                abilityOHE.append(0)
+        del values[10]
+        del values[9]
+        del values[8]
+        del values[7]
+        del values[0]
+            
+        values = values + classOHE + abilityOHE
         X.append(values)
     
     return X, Y
@@ -264,6 +306,8 @@ def writeFile(data, fname):
     f.close()
 
 X, Y = getEncodedData()
+
+print(X[0])
 
 writeFile(X, "X_Data.pkl")
 writeFile(Y, "Y_Data.pkl")
