@@ -92,9 +92,6 @@ def getEncodedListedAxies():
     avg50, avg150, avg300 = getRecentPriceStats()
     print(Y)
     
-    l = list(data.items())
-    random.shuffle(l)
-    data = dict(l)
     ids = list(data.keys())
     X = []
 
