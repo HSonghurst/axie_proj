@@ -162,6 +162,6 @@ with torch.no_grad():
     print("acc2", epoch_acc2/len(test_loader))
 
         
-        
+torch.save(model, "model.pt")
 
 
