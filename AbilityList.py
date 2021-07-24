@@ -169,7 +169,12 @@ abilityList = ["ANEMONE",
 "KOINOBORI",
 "OMATSURI",
 "TINY CARROT",
-"SNOWY SWALLOW"]
+"SNOWY SWALLOW",
+"KURO KOI",
+"HASAGI",
+"STARRY BALLOON",
+"CANDY BABYLONIA",
+"UMAIBO"]
 
 classList =[ "PLANT", "BEAST", "AQUATIC", "BIRD", "BUG", "MECH", "REPTILE", "DAWN", "DUSK"]
 
@@ -307,8 +312,8 @@ def writeFile(data, fname):
     pickle.dump(data, f)
     f.close()
 
-#X, Y = getEncodedData()
+X, Y = getEncodedData()
 
 
-#writeFile(X, "X_Data.pkl")
-#writeFile(Y, "Y_Data.pkl")
+writeFile(X, "X_Data.pkl")
+writeFile(Y, "Y_Data.pkl")

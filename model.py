@@ -5,7 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 import pickle
 from sklearn.model_selection import train_test_split
 
-EPOCHS = 40
+EPOCHS = 50
 BATCH_SIZE = 512
 LEARNING_RATE = 0.001
 
@@ -42,7 +42,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # Number of input features is 12.
-        self.layer_1 = nn.Linear(166, 256)
+        self.layer_1 = nn.Linear(169, 256)
         self.layer_2 = nn.Linear(256, 512)
         self.layer_3 = nn.Linear(512, 256)
         self.layer_out = nn.Linear(256, 1) 
@@ -134,7 +134,7 @@ for e in range(1, EPOCHS+1):
         epoch_acc2 += acc2.item()
         
 
-    print(f'Epoch {e+0:03}: | Loss: {epoch_loss/len(train_loader):.5f} | Acc: {epoch_acc/len(train_loader):.3f} | Acc: {epoch_acc1/len(train_loader):.3f} | Acc: {epoch_acc2/len(train_loader):.3f}')
+    print(f'Epoch {e+0:03}: | Loss: {epoch_loss/len(train_loader):.5f} | Acc: {epoch_acc/len(train_loader):.3f} | Acc within 25: {epoch_acc1/len(train_loader):.3f} | Acc within 50: {epoch_acc2/len(train_loader):.3f}')
 
 y_pred_list = []
 X_test_list = []

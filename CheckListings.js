@@ -175,6 +175,7 @@ async function removeEntries() {
 
 async function main() {
   t1 = new Date()
+  count=0
   while (true) {
     
     t2 = new Date()
@@ -187,8 +188,8 @@ async function main() {
 
     done = await uploadAxieData(res)
 
-    console.log(done)
-
+    count +=1
+    console.log("Checked New Axie Listings, iter:", count)
   }
     
 }

@@ -6,7 +6,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # Number of input features is 12.
-        self.layer_1 = nn.Linear(166, 256)
+        self.layer_1 = nn.Linear(169, 256)
         self.layer_2 = nn.Linear(256, 512)
         self.layer_3 = nn.Linear(512, 256)
         self.layer_out = nn.Linear(256, 1) 

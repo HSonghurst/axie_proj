@@ -156,7 +156,6 @@ async function downloadAxieTransactionData(){
     
     let returnData = await request(axieEndpoint, query, variables).then(data => {return data}).catch(err => console.log)
       if (typeof returnData.settledAuctions !== 'undefined'){
-        console.log("added")
         AxieTransactionArray = AxieTransactionArray.concat(returnData.settledAuctions.axies.results)
       } else {
         console.log('failed to get data from API')
@@ -179,20 +178,102 @@ async function downloadAxieData(idList){
     query GetAxieDetail($axieId: ID!) {
       axie(axieId: $axieId) {
         ...AxieDetail
+        transferHistory {
+          ...TransferHistoryInSettledAuction
+          __typename
+        }
         __typename
       }
     }
     
     fragment AxieDetail on Axie {
       id
+      image
       class
+      chain
       name
+      genes
+      owner
+      birthDate
+      bodyShape
       class
+      sireId
+      sireClass
+      matronId
+      matronClass
+      stage
+      title
       breedCount
+      level
+      
+      figure {
+        atlas
+        model
+        image
+        __typename
+      }
+      parts {
+        ...AxiePart
+        __typename
+      }
       stats {
         ...AxieStats
         __typename
       }
+      auction {
+        ...AxieAuction
+        __typename
+      }
+      ownerProfile {
+        name
+        __typename
+      }
+      battleInfo {
+        ...AxieBattleInfo
+        __typename
+      }
+      children {
+        id
+        name
+        class
+        image
+        title
+        stage
+        __typename
+      }
+      __typename
+    }
+    
+    fragment AxieBattleInfo on AxieBattleInfo {
+      banned
+      banUntil
+      level
+      __typename
+    }
+    
+    fragment AxiePart on AxiePart {
+      id
+      name
+      class
+      type
+      specialGenes
+      stage
+      abilities {
+        ...AxieCardAbility
+        __typename
+      }
+      __typename
+    }
+    
+    fragment AxieCardAbility on AxieCardAbility {
+      id
+      name
+      attack
+      defense
+      energy
+      description
+      backgroundUrl
+      effectIconUrl
       __typename
     }
     
@@ -203,6 +284,49 @@ async function downloadAxieData(idList){
       morale
       __typename
     }
+    
+    fragment AxieAuction on Auction {
+      startingPrice
+      endingPrice
+      startingTimestamp
+      endingTimestamp
+      duration
+      timeLeft
+      currentPrice
+      currentPriceUSD
+      suggestedPrice
+      seller
+      listingIndex
+      state
+      __typename
+    }
+    fragment TransferHistoryInSettledAuction on TransferRecords {
+      total
+      results {
+        ...TransferRecordInSettledAuction
+        __typename
+      }
+      __typename
+    }
+    
+    fragment TransferRecordInSettledAuction on TransferRecord {
+      from
+      to
+      txHash
+      timestamp
+      withPrice
+      withPriceUsd
+      fromProfile {
+        name
+        __typename
+      }
+      toProfile {
+        name
+        __typename
+      }
+      __typename
+    }
+    
     `
     const variables = 
       {
@@ -212,8 +336,6 @@ async function downloadAxieData(idList){
     
     let returnData = await request(axieEndpoint, query, variables).then(data => {return data}).catch(err => console.log)
     AxieDetailArray.push(returnData.axie)
-
-    console.log(i)
 
   }
   
@@ -250,7 +372,13 @@ function mergeTransDetail(res, ares) {
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
+async function uploadSpAxie(id) {
+  ares = await downloadAxieData(id)
+  done = await uploadAxieData(ares)
+}
+
 async function main() {
+  count = 0
   while (true) {
     res = await downloadAxieTransactionData()
 
@@ -263,10 +391,12 @@ async function main() {
 
     done = await uploadAxieData(res)
 
-    console.log(done)
     await delay(10000)
+    console.log("Downloaded Axie TX Data, iter:", count)
+    count+=1
 
   }
     
 }
 main()
+//uploadSpAxie(["2109731", "1552825"])
