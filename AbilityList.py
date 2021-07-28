@@ -205,8 +205,10 @@ def getAxieDataFromDb():
     client = MongoClient('localhost', 27017)
     db = client['mydb'] 
     
-    results = list(db.axies_19_07.find({"birthDate": {"$exists": True}}))
+    results = list(db.axies_26_07.find({"birthDate": {"$exists": True}}))
     axieDataOrganised = {}
+    priceList = []
+
     for x in results:
         if(len(x['parts']) < 4) or x['class'] is None:
             continue
@@ -227,10 +229,8 @@ def getAxieDataFromDb():
                         'spellFour': findAbilityIndex(x['parts'][5]['name']), 
                         'price': int(x['transferHistory']['results'][0]['withPriceUsd'].split('.')[0]),
                         }
-    priceList = []
+        priceList.append(int(x['transferHistory']['results'][0]['withPriceUsd'].split('.')[0]))
 
-    for key in list(axieDataOrganised.keys()):
-        priceList.append(axieDataOrganised[key]['price'])
     
     for i in range(len(priceList)):
         if i > 49:
@@ -312,8 +312,8 @@ def writeFile(data, fname):
     pickle.dump(data, f)
     f.close()
 
-X, Y = getEncodedData()
+#X, Y = getEncodedData()
 
 
-writeFile(X, "X_Data.pkl")
-writeFile(Y, "Y_Data.pkl")
+#writeFile(X, "X_Data2.pkl")
+#writeFile(Y, "Y_Data2.pkl")

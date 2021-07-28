@@ -14,7 +14,10 @@ Run analytics on the databse
 axieEndpoint = "https://axieinfinity.com/graphql-server-v2/graphql"
 
 
-const { request, gql } = require('graphql-request')
+const {
+  request,
+  gql
+} = require('graphql-request')
 var datetimenow = new Date();
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017';
@@ -39,10 +42,10 @@ async function getDataFromDb(){
 }
 */
 
-async function downloadAxieTransactionData(){
-    AxieTransactionArray = []
-    for (i=0; i<5; i++) {
-      const query = gql`
+async function downloadAxieTransactionData() {
+  AxieTransactionArray = []
+  for (i = 0; i < 5; i++) {
+    const query = gql `
       query GetRecentlyAxiesSold($from: Int, $size: Int) {
         settledAuctions {
           axies(from: $from, size: $size) {
@@ -145,36 +148,37 @@ async function downloadAxieTransactionData(){
       
       
     `
-    const variables = 
-      {
-        "from": i*20,
-        "size": 20,
-        "sort": "Latest",
-        "auctionType": "Sale"
-      }
-      
-    
-    let returnData = await request(axieEndpoint, query, variables).then(data => {return data}).catch(err => console.log)
-      if (typeof returnData.settledAuctions !== 'undefined'){
-        AxieTransactionArray = AxieTransactionArray.concat(returnData.settledAuctions.axies.results)
-      } else {
-        console.log('failed to get data from API')
-        downloadAxieTransactionData()
-      }
-
-      
-
+    const variables = {
+      "from": i * 20,
+      "size": 20,
+      "sort": "Latest",
+      "auctionType": "Sale"
     }
-    
-    
-    
-    return AxieTransactionArray
+
+
+    let returnData = await request(axieEndpoint, query, variables).then(data => {
+      return data
+    }).catch(err => console.log)
+    if (typeof returnData.settledAuctions !== 'undefined') {
+      AxieTransactionArray = AxieTransactionArray.concat(returnData.settledAuctions.axies.results)
+    } else {
+      console.log('failed to get data from API')
+      downloadAxieTransactionData()
+    }
+
+
+
+  }
+
+
+
+  return AxieTransactionArray
 }
 
-async function downloadAxieData(idList){
+async function downloadAxieData(idList) {
   AxieDetailArray = []
-  for(i=0; i<idList.length; i++) {
-    const query = gql`
+  for (i = 0; i < idList.length; i++) {
+    const query = gql `
     query GetAxieDetail($axieId: ID!) {
       axie(axieId: $axieId) {
         ...AxieDetail
@@ -328,34 +332,41 @@ async function downloadAxieData(idList){
     }
     
     `
-    const variables = 
-      {
-        "axieId": idList[i]
-      }
-      
-    
-    let returnData = await request(axieEndpoint, query, variables).then(data => {return data}).catch(err => console.log)
+    const variables = {
+      "axieId": idList[i]
+    }
+
+
+    let returnData = await request(axieEndpoint, query, variables).then(data => {
+      return data
+    }).catch(err => console.log)
     AxieDetailArray.push(returnData.axie)
 
   }
-  
+
   return AxieDetailArray
 }
 
-async function uploadAxieData(axieArray){
-    const db = await MongoClient.connect(url);
-    const dbo = db.db("mydb");
+async function uploadAxieData(axieArray) {
+  const db = await MongoClient.connect(url);
+  const dbo = db.db("mydb");
 
-    for (i=0;i <axieArray.length; i++){
-      dbo.collection('axies_19_07').updateOne({id: axieArray[i].id}, {$set: axieArray[i]}, { upsert: true })
-    }
-    
-    return done = true
+  for (i = 0; i < axieArray.length; i++) {
+    dbo.collection('axies_26_07').updateOne({
+      id: axieArray[i].id
+    }, {
+      $set: axieArray[i]
+    }, {
+      upsert: true
+    })
+  }
+
+  return done = true
 }
 
 function getIdFromObjList(objList) {
   idList = []
-  for(i=0; i<objList.length; i++) {
+  for (i = 0; i < objList.length; i++) {
     idList.push(objList[i].id)
   }
 
@@ -364,8 +375,11 @@ function getIdFromObjList(objList) {
 
 function mergeTransDetail(res, ares) {
   final = []
-  for (i=0; i<res.length; i++) {
-    final.push({...res[i], ...ares[i]})
+  for (i = 0; i < res.length; i++) {
+    final.push({
+      ...res[i],
+      ...ares[i]
+    })
   }
   return final
 }
@@ -385,7 +399,7 @@ async function main() {
     //idList = getIdFromObjList(res)
 
     //ares = await downloadAxieData(idList)
-    
+
 
     //inal = mergeTransDetail(res, ares)
 
@@ -393,10 +407,10 @@ async function main() {
 
     await delay(10000)
     console.log("Downloaded Axie TX Data, iter:", count)
-    count+=1
+    count += 1
 
   }
-    
+
 }
 main()
 //uploadSpAxie(["2109731", "1552825"])

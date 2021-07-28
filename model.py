@@ -4,7 +4,8 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import pickle
 from sklearn.model_selection import train_test_split
-
+import numpy as np
+np.set_printoptions(suppress=True)
 EPOCHS = 50
 BATCH_SIZE = 512
 LEARNING_RATE = 0.001
@@ -42,16 +43,18 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # Number of input features is 12.
-        self.layer_1 = nn.Linear(169, 256)
-        self.layer_2 = nn.Linear(256, 512)
-        self.layer_3 = nn.Linear(512, 256)
-        self.layer_out = nn.Linear(256, 1) 
+        self.layer_1 = nn.Linear(174, 512)
+        self.layer_2 = nn.Linear(512, 1024)
+        self.layer_3 = nn.Linear(1024, 1024)
+        self.layer_4 = nn.Linear(1024, 512)
+        self.layer_out = nn.Linear(512, 1) 
         
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
-        self.batchnorm1 = nn.BatchNorm1d(256)
-        self.batchnorm2 = nn.BatchNorm1d(512)
-        self.batchnorm3 = nn.BatchNorm1d(256)
+        self.batchnorm1 = nn.BatchNorm1d(512)
+        self.batchnorm2 = nn.BatchNorm1d(1024)
+        self.batchnorm3 = nn.BatchNorm1d(1024)
+        self.batchnorm4 = nn.BatchNorm1d(512)
         
     def forward(self, inputs):
         x = self.relu(self.layer_1(inputs))
@@ -60,6 +63,8 @@ class Net(nn.Module):
         x = self.batchnorm2(x)
         x = self.relu(self.layer_3(x))
         x = self.batchnorm3(x)
+        x = self.relu(self.layer_4(x))
+        x = self.batchnorm4(x)
         x = self.dropout(x)
         x = self.layer_out(x)
         
@@ -82,10 +87,10 @@ def close_acc(y_pred, y_test, diff):
 
     return acc
 
-with open("X_Data.pkl", 'rb') as f:
+with open("X_Data2.pkl", 'rb') as f:
    x_data = pickle.load(f)
 
-with open("Y_Data.pkl", 'rb') as f:
+with open("Y_Data2.pkl", 'rb') as f:
    y_data = pickle.load(f)
 
 x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.1, random_state=69)
@@ -111,8 +116,7 @@ model.train()
 for e in range(1, EPOCHS+1):
     epoch_loss = 0
     epoch_acc = 0
-    epoch_acc1 = 0
-    epoch_acc2 = 0
+    epoch_acc_list = np.zeros(11)
 
     for X_batch, y_batch in train_loader:
         X_batch, y_batch = X_batch.to(device), y_batch.to(device)
@@ -122,28 +126,38 @@ for e in range(1, EPOCHS+1):
         
         loss = criterion(y_pred, y_batch.unsqueeze(1))
         acc = binary_acc(y_pred, y_batch.unsqueeze(1))
-        acc1 = close_acc(y_pred, y_batch.unsqueeze(1), 25)
-        acc2 = close_acc(y_pred, y_batch.unsqueeze(1), 50)
+
+        acc_list = np.array([close_acc(y_pred, y_batch.unsqueeze(1), 500).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 450).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 400).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 350).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 300).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 250).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 200).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 150).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 100).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 50).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 25).item()])
         
         loss.backward()
         optimizer.step()
         
         epoch_loss += loss.item()
         epoch_acc += acc.item()
-        epoch_acc1 += acc1.item()
-        epoch_acc2 += acc2.item()
-        
+        epoch_acc_list = np.add(acc_list, epoch_acc_list) 
 
-    print(f'Epoch {e+0:03}: | Loss: {epoch_loss/len(train_loader):.5f} | Acc: {epoch_acc/len(train_loader):.3f} | Acc within 25: {epoch_acc1/len(train_loader):.3f} | Acc within 50: {epoch_acc2/len(train_loader):.3f}')
+    print(epoch_acc_list/len(train_loader))
+    print(f'Epoch {e+0:03}: | Loss: {epoch_loss/len(train_loader):.5f} | Acc: {epoch_acc/len(train_loader):.3f} | Acc breakdown:', (epoch_acc_list/len(train_loader))*100)
 
 y_pred_list = []
 X_test_list = []
 y_test_list = []
+
 model.eval()
 with torch.no_grad():
     acc_total = 0
-    epoch_acc1 = 0
-    epoch_acc2 = 0
+    epoch_acc_list = np.zeros(11)
+    
     for X_batch, y_batch in test_loader:
         X_batch, y_batch = X_batch.to(device), y_batch.to(device)
         y_test_pred = model(X_batch)
@@ -152,16 +166,25 @@ with torch.no_grad():
         X_test_list.append(X_batch.cpu().numpy())
 
         acc = binary_acc(y_pred, y_batch.unsqueeze(1))
-        acc1 = close_acc(y_pred, y_batch.unsqueeze(1), 25)
-        acc2 = close_acc(y_pred, y_batch.unsqueeze(1), 50)
+        acc_list = np.array([close_acc(y_pred, y_batch.unsqueeze(1), 500).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 450).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 400).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 350).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 300).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 250).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 200).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 150).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 100).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 50).item(),
+        close_acc(y_pred, y_batch.unsqueeze(1), 25).item()])
+
         acc_total += acc.item()
-        epoch_acc1 += acc1.item()
-        epoch_acc2 += acc2.item()
-    print("acc", acc_total/len(test_loader))
-    print("acc1", epoch_acc1/len(test_loader))
-    print("acc2", epoch_acc2/len(test_loader))
+        epoch_acc_list = np.add(acc_list, epoch_acc_list) 
+
+    print("acc", acc_total/len(test_loader), epoch_acc_list/len(test_loader))
+
 
         
-torch.save(model, "model.pt")
+torch.save(model, "model2.pt")
 
 

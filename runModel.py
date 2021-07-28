@@ -6,7 +6,7 @@ import numpy as np
 import math
 import time
 from AbilityList import*
-from modelClass import Net
+from modelClass2 import Net
 
 
 def getListedAxies():
@@ -63,7 +63,7 @@ def getRecentPriceStats():
     client = MongoClient('localhost', 27017)
     db = client['mydb'] 
 
-    recentEntries = db.axies_19_07.find().skip(db.axies_19_07.count() - N)
+    recentEntries = db.axies_26_07.find().skip(db.axies_26_07.count() - N)
     p= []
     for x in recentEntries:
         p.append(int(x['transferHistory']['results'][0]['withPriceUsd'].split('.')[0]))
@@ -131,7 +131,7 @@ def checkAxiePrice(spId):
     client = MongoClient('localhost', 27017)
     db = client['mydb'] 
     prices = []
-    results = list(db.axies_19_07.find({"id": spId}))
+    results = list(db.axies_26_07.find({"id": spId}))
     axieDataOrganised = {}
     for x in results:
         axieDataOrganised[x['id']] = {
@@ -161,7 +161,7 @@ def checkAxiePrice(spId):
 def runModel():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
-    model = torch.load("model.pt", map_location=device)
+    model = torch.load("model2.pt", map_location=device)
     model.eval()
     
 
@@ -174,10 +174,11 @@ def runModel():
         y_pred= [int(i.item()) for i in y_pred]
         discountList = [Y[i]/y_pred[i] for i in range(len(y_pred))]
         diffList = [y_pred[i] - Y[i] for i in range(len(y_pred))]
+        
 
         for i in range(len(discountList)):
-            if discountList[i] <0.6:
-                print("https://marketplace.axieinfinity.com/axie/" + ids[i], discountList[i], "price", Y[i])
+            if diffList[i] > 400:
+                print("https://marketplace.axieinfinity.com/axie/" + ids[i], diffList[i], "price", Y[i])
 
 
         time.sleep(1)
