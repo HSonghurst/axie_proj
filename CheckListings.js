@@ -18,6 +18,7 @@ const { request, gql } = require('graphql-request')
 var datetimenow = new Date();
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017';
+var BDF = require('./makeBDF.js')
 
 /*
 async function getDataFromDb(){
@@ -186,7 +187,10 @@ async function main() {
     }
     res = await checkAxieListings()
 
-    done = await uploadAxieData(res)
+
+    resOHE = BDF.getAxiesOHELive(res)
+
+    done = await uploadAxieData(resOHE)
 
     count +=1
     console.log("Checked New Axie Listings, iter:", count)

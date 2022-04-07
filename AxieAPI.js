@@ -165,9 +165,7 @@ async function downloadAxieTransactionData() {
       console.log('failed to get data from API')
       downloadAxieTransactionData()
     }
-
-
-
+    
   }
 
 
@@ -352,7 +350,7 @@ async function uploadAxieData(axieArray) {
   const dbo = db.db("mydb");
 
   for (i = 0; i < axieArray.length; i++) {
-    dbo.collection('axies_26_07').updateOne({
+    dbo.collection('axies_25_08').updateOne({
       id: axieArray[i].id
     }, {
       $set: axieArray[i]
